@@ -1,0 +1,58 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model Organization {
+  id              String   @id @default(uuid())
+  name            String
+  clerkOrgId      String   @unique
+  plan            String   @default("free")
+  stripeCustomerId String?  @unique
+  stripeSubId     String?  @unique
+  messageCount    Int      @default(0)
+  createdAt       DateTime @default(now())
+  documents       Document[]
+  conversations   Conversation[]
+}
+
+model Document {
+  id             String   @id @default(uuid())
+  organizationId String
+  organization   Organization @relation(fields: [organizationId], references: [id])
+  fileName       String
+  fileType       String
+  status         String   @default("processing")
+  createdAt      DateTime @default(now())
+  chunks         DocumentChunk[]
+}
+
+model DocumentChunk {
+  id          String   @id @default(uuid())
+  documentId  String
+  document    Document @relation(fields: [documentId], references: [id])
+  content     String
+  chunkIndex  Int
+  pineconeId  String   @unique
+  createdAt   DateTime @default(now())
+}
+
+model Conversation {
+  id             String   @id @default(uuid())
+  organizationId String
+  organization   Organization @relation(fields: [organizationId], references: [id])
+  createdAt      DateTime @default(now())
+  messages       Message[]
+}
+
+model Message {
+  id             String   @id @default(uuid())
+  conversationId String
+  conversation   Conversation @relation(fields: [conversationId], references: [id])
+  role           String
+  content        String
+  createdAt      DateTime @default(now())
+}

@@ -1,0 +1,44 @@
+{
+  "name": "backend",
+  "version": "1.0.0",
+  "type": "module",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "dev": "nodemon src/index.js",
+    "start": "node src/index.js",
+    "db:generate": "prisma generate",
+    "db:migrate": "prisma migrate dev",
+    "db:studio": "prisma studio"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "@clerk/express": "^2.1.56",
+    "@google/generative-ai": "^0.24.1",
+    "@langchain/openai": "^1.5.6",
+    "@langchain/pinecone": "^1.0.3",
+    "@pinecone-database/pinecone": "^5.1.1",
+    "@prisma/adapter-pg": "^7.9.1",
+    "@prisma/client": "^7.9.1",
+    "axios": "^1.19.0",
+    "cheerio": "^1.2.0",
+    "cors": "^2.8.6",
+    "dotenv": "^17.4.2",
+    "express": "^5.2.1",
+    "helmet": "^8.3.0",
+    "langchain": "^1.5.5",
+    "morgan": "^1.11.0",
+    "multer": "^2.2.0",
+    "openai": "^7.4.0",
+    "pdf-parse": "^2.4.5",
+    "pg": "^8.23.0",
+    "prisma": "^7.9.1",
+    "stripe": "^22.5.0",
+    "uuid": "^14.0.1"
+  },
+  "devDependencies": {
+    "nodemon": "^3.1.14"
+  }
+}
