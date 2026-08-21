@@ -10,7 +10,9 @@ export default clerkMiddleware(async (auth, req) => {
 
   // 2. If the route is not public, force the user to authenticate
   if (!isPublicRoute) {
-    await auth.protect();
+    // Wait for the auth function to resolve, then call protect
+    const { protect } = await auth();
+    protect();
   }
 });
 
