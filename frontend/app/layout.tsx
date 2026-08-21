@@ -4,8 +4,8 @@ import AuthProvider from '@/components/AuthProvider';
 import './globals.css';
 
 export const metadata: Metadata = {
-  title: 'AI Customer Support Platform',
-  description: 'AI-powered support assistant with RAG intelligence',
+  title: 'SupportAI | Intelligent Customer Service', 
+  description: 'An AI-powered customer support platform using RAG architecture.', 
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
