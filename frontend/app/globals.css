@@ -1,0 +1,53 @@
+@import "tailwindcss";
+
+/* 
+  Tailwind v4 Design System Engine
+  This automatically generates utility classes like bg-background, text-textMain, etc.
+*/
+@theme {
+  --color-background: #09090B;
+  --color-sidebar: #0C0C0F;
+  --color-card: #111114;
+  --color-cardHover: #18181B;
+  --color-borderSubtle: rgba(255, 255, 255, 0.08);
+  --color-primary: #8B5CF6;
+  --color-primaryHover: #7C3AED;
+  --color-textMain: #FAFAFA;
+  --color-secondary: #A1A1AA;
+  --color-muted: #71717A;
+  --color-success: #22C55E;
+  --color-error: #EF4444;
+}
+
+@layer base {
+  *,
+  ::after,
+  ::before {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+  }
+
+  body {
+    background-color: var(--color-background);
+    color: var(--color-textMain);
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    -webkit-font-smoothing: antialiased;
+  }
+}
+
+/* Modern Minimalist SaaS Scrollbar */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 4px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.2);
+}
