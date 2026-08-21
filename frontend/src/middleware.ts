@@ -8,11 +8,14 @@ export default clerkMiddleware(async (auth, req) => {
                         path.startsWith('/sign-up') || 
                         path.startsWith('/api/webhooks');
 
-  // 2. If the route is not public, force the user to authenticate
+  // 2. If the route is not public, check for a session
   if (!isPublicRoute) {
-    // Wait for the auth function to resolve, then call protect
-    const { protect } = await auth();
-    protect();
+    const { userId, redirectToSignIn } = await auth();
+    
+    // If the user is not logged in, bounce them to the sign-in page
+    if (!userId) {
+      return redirectToSignIn();
+    }
   }
 });
 
