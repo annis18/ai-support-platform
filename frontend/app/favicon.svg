@@ -1,0 +1,20 @@
+<svg width="200" height="200" viewBox="0 0 200 200" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- Define Gradients -->
+  <defs>
+    <linearGradient id="primaryGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#06B6D4" /> <!-- Teal/Cyan -->
+      <stop offset="100%" stop-color="#3B82F6" /> <!-- Deep Blue -->
+    </linearGradient>
+  </defs>
+
+  <!-- Abstract 'A' and 'Chat' merged structure -->
+  <path d="M100 35 L40 140 C35 150, 45 160, 55 160 L145 160 C155 160, 165 150, 160 140 Z" stroke="url(#primaryGradient)" stroke-width="12" stroke-linecap="round" stroke-linejoin="round"/>
+  
+  <!-- Network Nodes -->
+  <circle cx="100" cy="35" r="10" fill="url(#primaryGradient)"/> <!-- Top Node -->
+  <circle cx="65" cy="100" r="8" fill="url(#primaryGradient)" fill-opacity="0.6"/> <!-- Middle Left Node -->
+  <circle cx="135" cy="100" r="8" fill="url(#primaryGradient)" fill-opacity="0.6"/> <!-- Middle Right Node -->
+
+  <!-- The "AI Support" Chat Pulse Wave -->
+  <path d="M80 125 H120 M80 135 L95 135 M110 135 L120 135 L115 145" stroke="url(#primaryGradient)" stroke-width="8" stroke-linecap="round"/>
+</svg>
