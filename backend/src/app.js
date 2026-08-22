@@ -7,35 +7,37 @@ import chatRouter from './routes/chat.js';
 import stripeRouter from './routes/stripe.js';
 
 const app = express();
+
 app.use(helmet());
 
 app.use(cors({
   origin: [
     'http://localhost:3000',
     'http://127.0.0.1:3000',
-    'https://ai-support-platform-topaz.vercel.app/?view=chat',
+    'https://ai-support-platform-topaz.vercel.app',
   ],
   credentials: true,
 }));
 
-app.use(morgan('dev'));[cite: 1]
+app.use(morgan('dev'));
 
-app.use('/api/stripe/webhook', express.raw({ type: 'application/json' }));[cite: 1]
-app.use(express.json());[cite: 1]
-app.use(express.urlencoded({ extended: true }));[cite: 1]
+app.use('/api/stripe/webhook', express.raw({ type: 'application/json' }));
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
 
-// Temporarily removed clerkAuth to isolate 500 error[cite: 1]
+// Health check endpoint
+app.get('/health', (req, res) => {
+  res.json({ status: 'ok', timestamp: new Date().toISOString() });
+});
 
-app.get('/health', (req, res) => {[cite: 1]
-  res.json({ status: 'ok', timestamp: new Date().toISOString() });[cite: 1]
-});[cite: 1]
+// Routes
+app.use('/api/ingest', ingestionRouter);
+app.use('/api/chat', chatRouter);
+app.use('/api/stripe', stripeRouter);
 
-app.use('/api/ingest', ingestionRouter);[cite: 1]
-app.use('/api/chat', chatRouter);[cite: 1]
-app.use('/api/stripe', stripeRouter);[cite: 1]
+// 404 Handler
+app.use((req, res) => {
+  res.status(404).json({ error: 'Route not found' });
+});
 
-app.use((req, res) => {[cite: 1]
-  res.status(404).json({ error: 'Route not found' });[cite: 1]
-});[cite: 1]
-
-export default app;[cite: 1]
+export default app;
