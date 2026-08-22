@@ -7,25 +7,19 @@ import ConversationsView from '@/components/ConversationsView';
 import OverviewView from '@/components/OverviewView';
 import SettingsView from '@/components/SettingsView';
 import SearchView from '@/components/SearchView';
-import AnalyticsView from '@/components/AnalyticsView'; // NEW
+import AnalyticsView from '@/components/AnalyticsView';
 import { Search, Bell } from 'lucide-react';
 import Link from 'next/link';
+import { Suspense } from 'react';
 
-export default async function Home({ searchParams }: { searchParams: Promise<{ view?: string }> | { view?: string } }) {
-  const { orgId, userId } = await auth();
-  const organizationId = orgId || userId || 'default-org';
-  
-  const params = await searchParams;
-  const view = params?.view || 'chat';
-
-  // Dynamic header title
+async function PageContent({ view, organizationId }: { view: string; organizationId: string }) {
   const headerTitle = 
     view === 'overview' ? 'Overview' :
     view === 'documents' ? 'Documents' : 
     view === 'conversations' ? 'Conversations' : 
     view === 'settings' ? 'Settings' :
     view === 'search' ? 'Search' :
-    view === 'analytics' ? 'Analytics' : // NEW
+    view === 'analytics' ? 'Analytics' :
     'AI Assistant';
 
   return (
@@ -56,23 +50,29 @@ export default async function Home({ searchParams }: { searchParams: Promise<{ v
 
         {/* Main Workspace Area Router */}
         <main className="flex-1 flex flex-col overflow-hidden relative bg-[#09090B]">
-          {view === 'overview' ? (
-            <OverviewView organizationId={organizationId} />
-          ) : view === 'documents' ? (
-            <DocumentsView organizationId={organizationId} />
-          ) : view === 'conversations' ? (
-            <ConversationsView />
-          ) : view === 'settings' ? (
-            <SettingsView />
-          ) : view === 'search' ? (
-            <SearchView organizationId={organizationId} />
-          ) : view === 'analytics' ? (
-            <AnalyticsView /> // NEW
-          ) : (
-            <ChatInterface organizationId={organizationId} />
-          )}
+          {view === 'overview' && <OverviewView organizationId={organizationId} />}
+          {view === 'documents' && <DocumentsView organizationId={organizationId} />}
+          {view === 'conversations' && <ConversationsView />}
+          {view === 'settings' && <SettingsView />}
+          {view === 'search' && <SearchView organizationId={organizationId} />}
+          {view === 'analytics' && <AnalyticsView />}
+          {!view || view === 'chat' && <ChatInterface organizationId={organizationId} />}
         </main>
       </div>
     </div>
+  );
+}
+
+export default async function Home(props: { searchParams?: Promise<{ view?: string }> }) {
+  const { orgId, userId } = await auth();
+  const organizationId = orgId || userId || 'default-org';
+  
+  const searchParams = await props.searchParams;
+  const view = searchParams?.view || 'chat';
+
+  return (
+    <Suspense fallback={<div className="bg-[#09090B] w-full h-full" />}>
+      <PageContent view={view} organizationId={organizationId} />
+    </Suspense>
   );
 }
