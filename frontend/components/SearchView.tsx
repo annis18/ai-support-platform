@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { useAuth } from '@clerk/nextjs';
+
 import { getDocuments, setAuthToken, Document } from '@/lib/api';
 import { Search, FileText, Loader2, ChevronRight, Sparkles } from 'lucide-react';
 import Link from 'next/link';

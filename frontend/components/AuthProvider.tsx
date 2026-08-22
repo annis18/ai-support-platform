@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect } from 'react';
-import { useAuth } from '@clerk/nextjs';
+
 import { setAuthToken } from '@/lib/api';
 
 export default function AuthProvider({ children }: { children: React.ReactNode }) {

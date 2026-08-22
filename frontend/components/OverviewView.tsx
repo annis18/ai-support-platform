@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
-import { useAuth } from '@clerk/nextjs';
+
 import { getDocuments, setAuthToken, Document } from '@/lib/api';
 import { FileText, MessageSquare, Activity, Sparkles, Database, Loader2, Plus, CheckCircle2, XCircle } from 'lucide-react';
 

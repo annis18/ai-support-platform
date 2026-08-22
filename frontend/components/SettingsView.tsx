@@ -1,6 +1,6 @@
 'use client';
 
-import { useUser } from '@clerk/nextjs';
+
 import { Building2, Monitor, Cpu, Info, CheckCircle2 } from 'lucide-react';
 
 export default function SettingsView() {

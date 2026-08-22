@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState, useRef } from 'react';
-import { useAuth } from '@clerk/nextjs';
+
 import { getDocuments, uploadDocument, setAuthToken, Document } from '@/lib/api';
 import { Search, Plus, FileText, Loader2, Upload, File, MoreHorizontal, Copy, Check } from 'lucide-react';
 
