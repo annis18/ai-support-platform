@@ -16,7 +16,7 @@ export default function DocumentSidebar({ organizationId }: Props) {
 
   useEffect(() => {
     loadDocuments();
-  }, []);
+  }, [organizationId]);
 
   async function loadDocuments() {
     try {
@@ -85,7 +85,7 @@ export default function DocumentSidebar({ organizationId }: Props) {
             <div key={doc.id} className="flex items-start gap-2 p-2 rounded-lg bg-[#1a1a1a]">
               <FileText size={14} className="text-indigo-400 mt-0.5" />
               <div className="min-w-0">
-                <p className="text-xs text-gray-200 truncate">{doc.fileName}</p>
+                <p className="text-xs text-gray-200 truncate font-medium">{doc.fileName}</p>
                 <div className="flex items-center gap-1 mt-0.5">
                   {getStatusIcon(doc.status)}
                   <span className="text-xs text-gray-500">

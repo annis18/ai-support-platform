@@ -1,7 +1,6 @@
 'use client';
 
 import { useEffect, useState, useRef } from 'react';
-
 import { getDocuments, uploadDocument, setAuthToken, Document } from '@/lib/api';
 import { Search, Plus, FileText, Loader2, Upload, File, MoreHorizontal, Copy, Check } from 'lucide-react';
 
@@ -10,28 +9,24 @@ export default function DocumentsView({ organizationId }: { organizationId: stri
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
   
-  // Upload State
   const [isUploadModalOpen, setIsUploadModalOpen] = useState(false);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [uploading, setUploading] = useState(false);
   const [error, setError] = useState('');
 
-  // Actions Menu State
   const [openMenuId, setOpenMenuId] = useState<string | null>(null);
   const [copiedId, setCopiedId] = useState<string | null>(null);
   
   const fileInputRef = useRef<HTMLInputElement>(null);
-  const { getToken, isSignedIn } = useAuth();
 
   useEffect(() => {
-    if (isSignedIn) loadDocuments();
+    loadDocuments();
     // eslint-disable-next-line
-  }, [isSignedIn]);
+  }, []);
   
   async function loadDocuments() {
     try {
-      const token = await getToken();
-      setAuthToken(token);
+      setAuthToken('demo-token');
       setDocuments(await getDocuments(organizationId));
       setError('');
     } catch (err: unknown) {
@@ -47,8 +42,7 @@ export default function DocumentsView({ organizationId }: { organizationId: stri
     setError('');
     
     try {
-      const token = await getToken();
-      setAuthToken(token);
+      setAuthToken('demo-token');
       await uploadDocument(selectedFile, organizationId);
       await loadDocuments();
       closeModal();
@@ -59,7 +53,6 @@ export default function DocumentsView({ organizationId }: { organizationId: stri
     }
   }
 
-  // --- NEW STRICT VALIDATION LOGIC ---
   const validateAndSetFile = (file: File) => {
     if (!file.name.toLowerCase().endsWith('.pdf') && !file.name.toLowerCase().endsWith('.txt')) {
       setError('Invalid file type. Please upload a .pdf or .txt file.');
@@ -81,7 +74,6 @@ export default function DocumentsView({ organizationId }: { organizationId: stri
     const file = e.dataTransfer.files?.[0];
     if (file) validateAndSetFile(file);
   }
-  // -----------------------------------
 
   function closeModal() {
     setIsUploadModalOpen(false);
@@ -293,7 +285,6 @@ export default function DocumentsView({ organizationId }: { organizationId: stri
               <h2 className="text-[18px] font-semibold text-[#FAFAFA] mb-1.5">Upload documents</h2>
               <p className="text-[14px] text-[#A1A1AA] mb-6">Upload PDF or TXT files to your knowledge base.</p>
               
-              {/* Drag & Drop Zone WITH onDrop Validation added */}
               <div 
                 onClick={() => !uploading && fileInputRef.current?.click()}
                 onDragOver={(e) => e.preventDefault()}
@@ -330,7 +321,6 @@ export default function DocumentsView({ organizationId }: { organizationId: stri
               )}
             </div>
             
-            {/* Modal Actions */}
             <div className="flex items-center justify-end gap-3 px-6 py-4 bg-[#09090B] border-t border-white/[0.04]">
               <button 
                 onClick={closeModal} 

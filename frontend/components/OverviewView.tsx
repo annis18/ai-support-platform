@@ -10,12 +10,10 @@ export default function OverviewView({ organizationId }: { organizationId: strin
   const [documents, setDocuments] = useState<Document[]>([]);
   const [loading, setLoading] = useState(true);
   const [aiStatus, setAiStatus] = useState<'checking' | 'connected' | 'error'>('checking');
-  const { getToken, isSignedIn } = useAuth();
 
   const loadDashboardData = async () => {
     try {
-      const token = await getToken();
-      setAuthToken(token);
+      setAuthToken('demo-token');
       
       const docs = await getDocuments(organizationId);
       setDocuments(docs);
@@ -29,15 +27,14 @@ export default function OverviewView({ organizationId }: { organizationId: strin
   };
 
  useEffect(() => {
+    loadDashboardData();
     // eslint-disable-next-line
-    if (isSignedIn) loadDashboardData();
-    // eslint-disable-next-line
-  }, [isSignedIn]);
+  }, []);
+  
   const isProcessing = documents.some(doc => doc.status !== 'completed');
   const knowledgeStatus = documents.length === 0 ? 'No data' : isProcessing ? 'Processing' : 'Ready';
 
   return (
-// ... keep the rest of the file exactly the same
     <div className="flex flex-col h-full bg-[#09090B] overflow-y-auto p-6 md:p-10">
       <div className="max-w-5xl mx-auto w-full space-y-8 pb-10">
         

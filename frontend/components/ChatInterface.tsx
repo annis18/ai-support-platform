@@ -2,7 +2,7 @@
 
 import { useState, useRef, useEffect } from 'react';
 import { Send, Loader2, Bot } from 'lucide-react';
-import { sendMessage, setAuthToken, Message, Source } from '@/lib/api';
+import { sendMessage, Message, Source } from '@/lib/api';
 import ChatMessage from './ChatMessage';
 
 interface MessageWithSources extends Message {

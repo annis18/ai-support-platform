@@ -10,12 +10,10 @@ export default function SearchView({ organizationId }: { organizationId: string 
   const [documents, setDocuments] = useState<Document[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
-  const { getToken, isSignedIn } = useAuth();
 
   const loadDocuments = async () => {
     try {
-      const token = await getToken();
-      setAuthToken(token);
+      setAuthToken('demo-token');
       const docs = await getDocuments(organizationId);
       setDocuments(docs);
     } catch (err) {
@@ -26,18 +24,15 @@ export default function SearchView({ organizationId }: { organizationId: string 
   };
 
   useEffect(() => {
+    loadDocuments();
     // eslint-disable-next-line
-    if (isSignedIn) loadDocuments();
-    // eslint-disable-next-line
-  }, [isSignedIn]);
+  }, []);
 
-  // Client-side filtering to respect the frozen backend
   const filteredResults = documents.filter(doc => 
     doc.fileName.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
   return (
-// ... keep the rest of the file exactly the same
     <div className="flex flex-col h-full bg-[#09090B] overflow-y-auto p-6 md:p-10">
       <div className="max-w-4xl mx-auto w-full space-y-8 pb-10">
         
@@ -108,8 +103,7 @@ export default function SearchView({ organizationId }: { organizationId: string 
             /* No Results Found */
             <div className="py-16 text-center flex flex-col items-center justify-center bg-[#111114] border border-white/[0.08] rounded-xl">
               <p className="text-[15px] font-medium text-[#FAFAFA] mb-2">No documents found</p>
-              
-<p className="text-[14px] text-[#A1A1AA] mb-6">We couldn&apos;t find anything matching &quot;{searchQuery}&quot;.</p>
+              <p className="text-[14px] text-[#A1A1AA] mb-6">We couldn&apos;t find anything matching &quot;{searchQuery}&quot;.</p>
               <Link href="/?view=chat" className="flex items-center gap-2 px-4 py-2 bg-white/[0.08] hover:bg-white/[0.12] text-[#FAFAFA] text-[13px] font-medium rounded-lg transition-colors">
                 <Sparkles size={14} /> Ask AI instead
               </Link>

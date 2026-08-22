@@ -1,14 +1,10 @@
 'use client';
 
-
 import { Building2, Monitor, Cpu, Info, CheckCircle2 } from 'lucide-react';
 
 export default function SettingsView() {
-  const { user } = useUser();
-
-  // Fallback to personal user data since Clerk Organizations are disabled
-  const workspaceName = user?.fullName ? `${user.fullName}'s Workspace` : 'My Workspace';
-  const orgId = user?.id || 'org_default';
+  const workspaceName = 'My Workspace';
+  const orgId = 'org_default';
 
   return (
     <div className="flex flex-col h-full bg-[#09090B] overflow-y-auto p-6 md:p-10">
