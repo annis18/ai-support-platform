@@ -7,8 +7,7 @@ import chatRouter from './routes/chat.js';
 import stripeRouter from './routes/stripe.js';
 
 const app = express();
-
-app.use(helmet());[cite: 1]
+app.use(helmet());
 
 app.use(cors({
   origin: [
