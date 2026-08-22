@@ -9,14 +9,16 @@ import stripeRouter from './routes/stripe.js';
 const app = express();
 
 app.use(helmet());[cite: 1]
+
 app.use(cors({
   origin: [
-    'http://localhost:3000', 
-    'http://127.0.0.1:3000',[cite: 1]
-    'https://ai-support-platform-topaz.vercel.app' // ADDED: Your live Vercel domain
+    'http://localhost:3000',
+    'http://127.0.0.1:3000',
+    'https://ai-support-platform-topaz.vercel.app/?view=chat',
   ],
-  credentials: true,[cite: 1]
+  credentials: true,
 }));
+
 app.use(morgan('dev'));[cite: 1]
 
 app.use('/api/stripe/webhook', express.raw({ type: 'application/json' }));[cite: 1]
