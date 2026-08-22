@@ -19,7 +19,7 @@ const prisma = new PrismaClient({ adapter });
 // Verify connection on startup
 pool.connect((err, client, release) => {
   if (err) {
-    console.error('[DB] Connection failed:', err.message);
+    console.error('[DB] Connection failed:', err);
   } else {
     console.log('[DB] PostgreSQL connected successfully');
     release();
