@@ -74,6 +74,7 @@ export interface Source {
   id: string;
   content: string;
   score: number;
+  fileName?: string;
   metadata: Record<string, any>;
 }
 
@@ -143,4 +144,14 @@ export async function getConversationMessages(id: string) {
 
   const data = await res.json();
   return data;
+}
+
+export function setAuthToken(token: string | null) {
+  if (typeof window !== 'undefined') {
+    if (token) {
+      localStorage.setItem('token', token);
+    } else {
+      localStorage.removeItem('token');
+    }
+  }
 }

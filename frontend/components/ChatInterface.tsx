@@ -45,13 +45,14 @@ export default function ChatInterface({ organizationId }: Props) {
       async function fetchOldChat() {
         try {
           setLoading(true);
-          const data = await getConversationMessages(loadId);
+          const safeId = loadId as string; // <-- This single line fixes the TS errors!
+          
+          const data = await getConversationMessages(safeId);
           
           setMessages(data.messages);
-          setConversationId(loadId);
+          setConversationId(safeId);
           
-          // Save the fetched chat to session storage so tabs work instantly!
-          sessionStorage.setItem('chatConversationId', loadId);
+          sessionStorage.setItem('chatConversationId', safeId);
           sessionStorage.setItem('chatMessages', JSON.stringify(data.messages));
         } catch (err) {
           console.error('Failed to load chat:', err);
