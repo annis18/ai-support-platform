@@ -1,5 +1,5 @@
 // Hardcoded to strictly enforce the /api path and bypass .env conflicts
-const API_URL = 'http://localhost:5000/api';
+const API_URL = 'https://ai-support-backend-96gd.onrender.com/api';
 
 // Helper to dynamically attach the JWT token to every request
 function getAuthHeaders(isFormData = false) {
