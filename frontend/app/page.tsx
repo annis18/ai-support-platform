@@ -35,13 +35,14 @@ function DashboardContent() {
     setLoading(false);
   }, []);
 
-  const handleAuth = async (e: React.FormEvent) => {
-    e.preventDefault();
+  e.preventDefault();
     setError('');
+    // This correctly switches between login and signup
     const endpoint = isLoginMode ? '/api/auth/login' : '/api/auth/signup';
 
     try {
-      const response = await fetch('https://ai-support-backend-96gd.onrender.com/api/auth/login', { ... }), {
+      // Safely combines your live Render URL with the correct endpoint
+      const res = await fetch(`https://ai-support-backend-96gd.onrender.com${endpoint}`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email, password })
