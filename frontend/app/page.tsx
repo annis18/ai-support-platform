@@ -41,7 +41,7 @@ function DashboardContent() {
     const endpoint = isLoginMode ? '/api/auth/login' : '/api/auth/signup';
 
     try {
-      const res = await fetch(`http://localhost:5000${endpoint}`, {
+      const response = await fetch('https://ai-support-backend-96gd.onrender.com/api/auth/login', { ... }), {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email, password })
