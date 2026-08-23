@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
 
-import { getDocuments, setAuthToken, Document } from '@/lib/api';
+import { getDocuments, Document } from '@/lib/api';
 import { FileText, MessageSquare, Activity, Sparkles, Database, Loader2, Plus, CheckCircle2, XCircle } from 'lucide-react';
 
 export default function OverviewView({ organizationId }: { organizationId: string }) {
@@ -13,8 +13,6 @@ export default function OverviewView({ organizationId }: { organizationId: strin
 
   const loadDashboardData = async () => {
     try {
-      setAuthToken('demo-token');
-      
       const docs = await getDocuments(organizationId);
       setDocuments(docs);
       setAiStatus('connected');
@@ -128,7 +126,7 @@ export default function OverviewView({ organizationId }: { organizationId: strin
               <h3 className="text-[16px] font-medium text-[#FAFAFA] mb-4">Quick Actions</h3>
               <div className="flex flex-wrap gap-3">
                 <Link href="/?view=chat" className="flex items-center gap-2 px-5 py-2.5 bg-[#8B5CF6] hover:bg-[#7C3AED] text-[#FAFAFA] text-[14px] font-medium rounded-[8px] transition-colors shadow-sm">
-                  <Sparkles size={16} /> Ask AI
+                  <Sparkles size={16} /> Get Answers
                 </Link>
                 <Link href="/?view=documents" className="flex items-center gap-2 px-5 py-2.5 bg-white/[0.05] hover:bg-white/[0.08] border border-white/[0.08] text-[#FAFAFA] text-[14px] font-medium rounded-[8px] transition-colors">
                   <Plus size={16} className="text-[#A1A1AA]" /> Upload document

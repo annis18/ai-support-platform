@@ -5,6 +5,7 @@ import morgan from 'morgan';
 import ingestionRouter from './routes/ingestion.js';
 import chatRouter from './routes/chat.js';
 import stripeRouter from './routes/stripe.js';
+import authRoutes from './routes/auth.js';
 
 const app = express();
 
@@ -34,6 +35,7 @@ app.get('/health', (req, res) => {
 app.use('/api/ingest', ingestionRouter);
 app.use('/api/chat', chatRouter);
 app.use('/api/stripe', stripeRouter);
+app.use('/api/auth', authRoutes);
 
 // 404 Handler
 app.use((req, res) => {

@@ -17,6 +17,7 @@ model Organization {
   createdAt       DateTime @default(now())
   documents       Document[]
   conversations   Conversation[]
+  users           User[]
 }
 
 model Document {
@@ -55,4 +56,14 @@ model Message {
   role           String
   content        String
   createdAt      DateTime @default(now())
+}
+
+model User {
+  id             String       @id @default(uuid())
+  email          String       @unique
+  passwordHash   String
+  organizationId String
+  organization   Organization @relation(fields: [organizationId], references: [id])
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
 }

@@ -1,42 +1,28 @@
-# AI Customer Support Platform
+# SupportAI: Multi-Tenant RAG Knowledge Base
 
-An AI-powered customer support platform built with RAG (Retrieval-Augmented Generation) architecture. Businesses upload documentation and customers get instant, cited answers.
+A production-ready, context-aware AI support platform built with a Retrieval-Augmented Generation (RAG) architecture. This application allows organizations to safely upload proprietary documentation and retrieve instant, hallucination-free answers with strict data isolation.
 
 ## Tech Stack
 
-**Frontend:** Next.js 16, Tailwind CSS, Clerk Auth  
-**Backend:** Node.js, Express, PostgreSQL, Prisma 7  
-**AI:** Google Gemini (gemini-embedding-001 + gemini-flash-latest)  
-**Vector DB:** Pinecone (3072 dimensions, cosine similarity)  
-**Payments:** Stripe  
+*   **Frontend:** Next.js 16, React, Tailwind CSS, Lucide Icons
+*   **Backend:** Node.js, Express.js, PostgreSQL, Prisma ORM
+*   **AI / Generative:** Google Gemini API (`gemini-embedding-001` + `gemini-1.5-flash`)
+*   **Vector Database:** Pinecone (3072 dimensions, cosine similarity)
+*   **Authentication:** Custom JWT (JSON Web Tokens) with bcrypt password hashing
 
-## Core Features
+## Core Engineering Features
 
-- Document ingestion pipeline (PDF + TXT) with chunking and embedding
-- Semantic search with multi-tenant isolation per organization
-- AI-generated answers with source citations
-- Conversation history persistence
-- Clerk authentication with Google/GitHub OAuth
-- Stripe billing with Free/Pro plans
-- SaaS dashboard with document management
+*   **Strict Multi-Tenant Isolation:** Engineered a custom JWT-based authentication flow backed by PostgreSQL to replace third-party auth, ensuring organizations can only embed and query their own private Pinecone vectors.
+*   **Resilient API Handling (Smart Retry):** Built an exponential backoff and retry wrapper in the Node.js backend to silently catch and resolve `503 Service Unavailable` errors from third-party AI endpoints during high load, preventing application crashes.
+*   **Persistent UI State:** Solved Next.js aggressive caching and React unmounting behaviors using `sessionStorage`, URL parameter parsing, and explicit `cache: 'no-store'` directives for seamless chat history persistence across tabs.
+*   **Advanced Document Pipeline:** Full document ingestion (PDF/TXT) with intelligent chunking, vectorization, secure deletion cascading, and UI-integrated file attachments directly from the chat interface.
 
 ## Local Setup
 
+### 1. Backend Integration
 ```bash
-# Backend
 cd backend
 npm install
-cp .env.example .env  # fill in your keys
-npx prisma migrate dev
+# Configure your .env file with DATABASE_URL, JWT_SECRET, GEMINI_API_KEY, and PINECONE_API_KEY
+npx prisma db push
 npm run dev
-
-# Frontend
-cd frontend
-npm install
-cp .env.example .env.local  # fill in your keys
-npm run dev
-```
-
-## Environment Variables
-
-See `.env.example` in both `backend/` and `frontend/` for required keys.

@@ -1,56 +1,156 @@
 'use client';
 
-import { useState } from 'react';
-import DocumentSidebar from '@/components/DocumentSidebar';
+import { useState, useEffect, Suspense } from 'react';
+import { useSearchParams } from 'next/navigation';
+import OverviewView from '@/components/OverviewView';
+import DocumentsView from '@/components/DocumentsView';
 import ChatInterface from '@/components/ChatInterface';
+import SearchView from '@/components/SearchView';
+import SettingsView from '@/components/SettingsView';
+import AnalyticsView from '@/components/AnalyticsView';
+import ConversationsView from '@/components/ConversationsView';
+import DocumentSidebar from '@/components/DocumentSidebar';
 
-const ORG_ID = 'default-org';
+function DashboardContent() {
+  const searchParams = useSearchParams();
+  const view = searchParams.get('view') || 'overview';
 
-export default function Home() {
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [user, setUser] = useState<{ id: string; email: string; organizationId: string } | null>(null);
+  const [isLoginMode, setIsLoginMode] = useState(true);
+  
+  const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [error, setError] = useState('');
+  const [loading, setLoading] = useState(true);
 
-  if (!isLoggedIn) {
+  // Check for existing token on mount
+  useEffect(() => {
+    const token = localStorage.getItem('token');
+    const storedUser = localStorage.getItem('user');
+    if (token && storedUser) {
+      setUser(JSON.parse(storedUser));
+      setIsAuthenticated(true);
+    }
+    setLoading(false);
+  }, []);
+
+  const handleAuth = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setError('');
+    const endpoint = isLoginMode ? '/api/auth/login' : '/api/auth/signup';
+
+    try {
+      const res = await fetch(`http://localhost:5000${endpoint}`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, password })
+      });
+
+      const data = await res.json();
+
+      if (!res.ok) throw new Error(data.error || 'Authentication failed');
+
+      // Save credentials and update state
+      localStorage.setItem('token', data.token);
+      localStorage.setItem('user', JSON.stringify(data.user));
+      setUser(data.user);
+      setIsAuthenticated(true);
+    } catch (err: any) {
+      setError(err.message);
+    }
+  };
+
+  const handleLogout = () => {
+    localStorage.removeItem('token');
+    localStorage.removeItem('user');
+    setIsAuthenticated(false);
+    setUser(null);
+  };
+
+  if (loading) {
+    return <div className="h-screen flex items-center justify-center bg-[#09090B] text-white">Loading...</div>;
+  }
+
+  if (!isAuthenticated || !user) {
     return (
       <div className="w-full h-screen flex items-center justify-center bg-[#09090B]">
-        <div className="w-96 p-8 rounded-lg bg-[#1a1a1a] border border-[#333]">
-          <h1 className="text-2xl font-bold text-white mb-6">SupportAI</h1>
-          <input
-            type="password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            placeholder="Enter password"
-            className="w-full px-4 py-2 bg-[#0f0f0f] border border-[#333] rounded-lg text-white mb-4"
-            onKeyDown={(e) => e.key === 'Enter' && setIsLoggedIn(password === 'demo123')}
-          />
-          <button
-            onClick={() => setIsLoggedIn(password === 'demo123')}
-            className="w-full px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg font-medium transition-colors"
-          >
-            Sign In
-          </button>
-          {password && password !== 'demo123' && <p className="text-red-400 text-sm mt-2">Wrong password</p>}
-          <p className="text-gray-500 text-xs mt-4">Demo password: demo123</p>
+        <div className="w-96 p-8 rounded-xl bg-[#111114] border border-white/[0.08] shadow-2xl">
+          <div className="flex items-center gap-2.5 mb-8 justify-center">
+            <div className="w-8 h-8 bg-[#8B5CF6] rounded-lg flex items-center justify-center text-white font-bold">AI</div>
+            <h1 className="text-xl font-semibold text-white tracking-tight">SupportAI</h1>
+          </div>
+
+          <h2 className="text-lg font-medium text-white mb-6 text-center">
+            {isLoginMode ? 'Welcome back' : 'Create an account'}
+          </h2>
+
+          <form onSubmit={handleAuth} className="space-y-4">
+            <div>
+              <label className="text-[13px] font-medium text-[#A1A1AA] mb-1.5 block">Email</label>
+              <input
+                type="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                className="w-full px-3 py-2 bg-white/[0.04] border border-white/[0.08] rounded-lg text-white text-[14px] focus:outline-none focus:border-[#8B5CF6] transition-colors"
+                required
+              />
+            </div>
+            <div>
+              <label className="text-[13px] font-medium text-[#A1A1AA] mb-1.5 block">Password</label>
+              <input
+                type="password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                className="w-full px-3 py-2 bg-white/[0.04] border border-white/[0.08] rounded-lg text-white text-[14px] focus:outline-none focus:border-[#8B5CF6] transition-colors"
+                required
+              />
+            </div>
+
+            {error && <p className="text-[#EF4444] text-[13px] text-center">{error}</p>}
+
+            <button
+              type="submit"
+              className="w-full py-2.5 bg-[#8B5CF6] hover:bg-[#7C3AED] text-white text-[14px] font-medium rounded-lg transition-colors mt-2"
+            >
+              {isLoginMode ? 'Sign In' : 'Sign Up'}
+            </button>
+          </form>
+
+          <p className="text-[#A1A1AA] text-[13px] text-center mt-6">
+            {isLoginMode ? "Don't have an account? " : "Already have an account? "}
+            <button
+              onClick={() => setIsLoginMode(!isLoginMode)}
+              className="text-[#8B5CF6] hover:text-white transition-colors"
+            >
+              {isLoginMode ? 'Sign up' : 'Sign in'}
+            </button>
+          </p>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="flex h-screen w-full overflow-hidden bg-[#09090B]">
-      <DocumentSidebar organizationId={ORG_ID} />
-      <div className="flex-1 flex flex-col overflow-hidden">
-        <div className="h-14 border-b border-[#222] flex items-center justify-between px-6 bg-[#0f0f0f]">
-          <h1 className="text-sm font-semibold text-gray-300">SupportAI</h1>
-          <button
-            onClick={() => setIsLoggedIn(false)}
-            className="text-xs text-gray-400 hover:text-white transition-colors"
-          >
-            Sign Out
-          </button>
-        </div>
-        <ChatInterface organizationId={ORG_ID} />
-      </div>
+    <div className="flex h-screen bg-[#09090B] text-white overflow-hidden font-sans">
+      <DocumentSidebar currentView={view} onLogout={handleLogout} />
+      <main className="flex-1 flex flex-col h-full overflow-hidden relative">
+        {view === 'overview' && <OverviewView organizationId={user.organizationId} />}
+        {view === 'chat' && <ChatInterface organizationId={user.organizationId} />}
+        {view === 'documents' && <DocumentsView organizationId={user.organizationId} />}
+        {view === 'search' && <SearchView organizationId={user.organizationId} />}
+        {view === 'conversations' && <ConversationsView />}
+        {view === 'analytics' && <AnalyticsView />}
+        {view === 'settings' && <SettingsView />}
+      </main>
     </div>
+  );
+}
+
+export default function DashboardPage() {
+  return (
+    <Suspense fallback={<div className="h-screen bg-[#09090B] flex items-center justify-center text-white">Loading...</div>}>
+      <DashboardContent />
+    </Suspense>
   );
 }

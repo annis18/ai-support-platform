@@ -1,101 +1,70 @@
 'use client';
 
-import { useEffect, useState, useRef } from 'react';
-import { Upload, FileText, Loader2, CheckCircle, XCircle } from 'lucide-react';
-import { getDocuments, uploadDocument, Document } from '@/lib/api';
+import Link from 'next/link';
+import { LayoutDashboard, MessageSquare, FileText, Search, BarChart2, Settings, LogOut, Bot, MessageCircle } from 'lucide-react';
 
 interface Props {
-  organizationId: string;
+  currentView: string;
+  onLogout: () => void;
 }
 
-export default function DocumentSidebar({ organizationId }: Props) {
-  const [documents, setDocuments] = useState<Document[]>([]);
-  const [uploading, setUploading] = useState(false);
-  const [error, setError] = useState('');
-  const fileInputRef = useRef<HTMLInputElement>(null);
-
-  useEffect(() => {
-    loadDocuments();
-  }, [organizationId]);
-
-  async function loadDocuments() {
-    try {
-      const docs = await getDocuments(organizationId);
-      setDocuments(docs);
-    } catch (err: unknown) {
-      console.error('Failed to load documents:', err);
-    }
-  }
-
-  async function handleFileUpload(e: React.ChangeEvent<HTMLInputElement>) {
-    const file = e.target.files?.[0];
-    if (!file) return;
-
-    setUploading(true);
-    setError('');
-
-    try {
-      await uploadDocument(file, organizationId);
-      await loadDocuments();
-    } catch (err: unknown) {
-      const message = err instanceof Error ? err.message : 'Upload failed';
-      setError(message);
-    } finally {
-      setUploading(false);
-      if (fileInputRef.current) fileInputRef.current.value = '';
-    }
-  }
-
-  function getStatusIcon(status: string) {
-    if (status === 'completed') return <CheckCircle size={12} className="text-green-400" />;
-    if (status === 'failed') return <XCircle size={12} className="text-red-400" />;
-    return <Loader2 size={12} className="text-yellow-400 animate-spin" />;
-  }
+export default function DocumentSidebar({ currentView, onLogout }: Props) {
+  const navItems = [
+    { id: 'overview', label: 'Overview', icon: LayoutDashboard, href: '/?view=overview' },
+    { id: 'chat', label: 'Get Answers', icon: MessageSquare, href: '/?view=chat' },
+    { id: 'conversations', label: 'Conversations', icon: MessageCircle, href: '/?view=conversations' },
+    { id: 'documents', label: 'Documents', icon: FileText, href: '/?view=documents' },
+    { id: 'search', label: 'Search', icon: Search, href: '/?view=search' },
+    { id: 'analytics', label: 'Analytics', icon: BarChart2, href: '/?view=analytics' },
+    { id: 'settings', label: 'Settings', icon: Settings, href: '/?view=settings' },
+  ];
 
   return (
-    <div className="w-64 bg-[#141414] border-r border-[#222] flex flex-col h-full">
-      <div className="p-4 border-b border-[#222]">
-        <h2 className="text-sm font-semibold text-gray-300 mb-3">Knowledge Base</h2>
-        <button
-          onClick={() => fileInputRef.current?.click()}
-          disabled={uploading}
-          className="w-full flex items-center justify-center gap-2 px-3 py-2 bg-indigo-600 hover:bg-indigo-700 disabled:opacity-50 text-white text-sm rounded-lg"
-        >
-          {uploading ? (
-            <><Loader2 size={14} className="animate-spin" /> Processing...</>
-          ) : (
-            <><Upload size={14} /> Upload</>
-          )}
-        </button>
-        <input
-          ref={fileInputRef}
-          type="file"
-          accept=".pdf,.txt"
-          onChange={handleFileUpload}
-          className="hidden"
-        />
-        {error && <p className="text-red-400 text-xs mt-2">{error}</p>}
+    <div className="w-64 bg-[#111114] border-r border-white/[0.08] flex flex-col h-full shrink-0">
+      {/* Brand */}
+      <div className="h-16 flex items-center px-6 border-b border-white/[0.04]">
+        <div className="flex items-center gap-2.5">
+          <div className="w-8 h-8 bg-[#8B5CF6] rounded-lg flex items-center justify-center">
+            <Bot size={18} className="text-white" />
+          </div>
+          <span className="text-[15px] font-semibold text-[#FAFAFA] tracking-tight">SupportAI</span>
+        </div>
       </div>
 
-      <div className="flex-1 overflow-y-auto p-3 space-y-2">
-        {documents.length === 0 ? (
-          <p className="text-gray-500 text-xs text-center mt-8">No documents yet</p>
-        ) : (
-          documents.map((doc) => (
-            <div key={doc.id} className="flex items-start gap-2 p-2 rounded-lg bg-[#1a1a1a]">
-              <FileText size={14} className="text-indigo-400 mt-0.5" />
-              <div className="min-w-0">
-                <p className="text-xs text-gray-200 truncate font-medium">{doc.fileName}</p>
-                <div className="flex items-center gap-1 mt-0.5">
-                  {getStatusIcon(doc.status)}
-                  <span className="text-xs text-gray-500">
-                    {doc.status === 'completed' ? `${doc._count.chunks} chunks` : doc.status}
-                  </span>
-                </div>
-              </div>
-            </div>
-          ))
-        )}
+      {/* Navigation */}
+      <div className="flex-1 overflow-y-auto py-6 px-3 space-y-1">
+        <div className="px-3 mb-2">
+          <p className="text-[11px] font-medium text-[#71717A] uppercase tracking-wider">Menu</p>
+        </div>
+        {navItems.map((item) => {
+          const isActive = currentView === item.id;
+          const Icon = item.icon;
+          return (
+            <Link
+              key={item.id}
+              href={item.href}
+              className={`flex items-center gap-3 px-3 py-2.5 rounded-lg transition-colors ${
+                isActive 
+                  ? 'bg-[#8B5CF6]/10 text-[#8B5CF6]' 
+                  : 'text-[#A1A1AA] hover:text-[#FAFAFA] hover:bg-white/[0.04]'
+              }`}
+            >
+              <Icon size={16} />
+              <span className="text-[14px] font-medium">{item.label}</span>
+            </Link>
+          );
+        })}
+      </div>
+
+      {/* User Profile / Logout */}
+      <div className="p-4 border-t border-white/[0.04]">
+        <button 
+          className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-[#A1A1AA] hover:text-[#EF4444] hover:bg-[#EF4444]/10 transition-colors"
+          onClick={onLogout}
+        >
+          <LogOut size={16} />
+          <span className="text-[14px] font-medium">Sign Out</span>
+        </button>
       </div>
     </div>
   );

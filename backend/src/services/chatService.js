@@ -5,32 +5,20 @@ import prisma from '../config/db.js';
 
 /**
  * Embeds a user's question using RETRIEVAL_QUERY taskType.
- *
- * WHY different taskType than ingestion?
- * Gemini trains document vectors to "answer" and query vectors to "ask".
- * Using RETRIEVAL_QUERY on the question makes the vector point toward
- * documents that ANSWER it — not toward similar questions.
- * Mixing taskTypes destroys search accuracy.
  */
 async function embedQuery(question) {
   const embeddingModel = getEmbeddingModel();
 
   const result = await embeddingModel.embedContent({
     content: { parts: [{ text: question }], role: 'user' },
-    taskType: 'RETRIEVAL_QUERY', // ← different from ingestion!
+    taskType: 'RETRIEVAL_QUERY',
   });
 
-  return result.embedding.values; // 3072-dim vector
+  return result.embedding.values; 
 }
 
 /**
  * Searches Pinecone for the most semantically similar chunks.
- *
- * We filter by organizationId so companies only search their
- * own documents — this is what makes it multi-tenant.
- *
- * topK: how many chunks to retrieve. 3 is usually enough context
- * without overloading the LLM prompt. Too many = noisy answers.
  */
 async function searchSimilarChunks(queryVector, organizationId, topK = 3) {
   const index = getPineconeIndex();
@@ -42,16 +30,11 @@ async function searchSimilarChunks(queryVector, organizationId, topK = 3) {
     includeMetadata: true,
   });
 
-  return results.matches; // array of { id, score, metadata }
+  return results.matches; 
 }
 
 /**
  * Fetches full chunk text from PostgreSQL using pineconeIds.
- *
- * WHY fetch from Postgres if Pinecone already has metadata?
- * Pinecone metadata has a size limit (~40KB total per vector).
- * Full document text can exceed this. Postgres has no such limit.
- * We store full text in Postgres and only a preview in Pinecone.
  */
 async function fetchChunksByIds(pineconeIds) {
   return prisma.documentChunk.findMany({
@@ -66,13 +49,6 @@ async function fetchChunksByIds(pineconeIds) {
 
 /**
  * Builds the prompt sent to Gemini Flash.
- *
- * Prompt engineering is critical for RAG quality.
- * Key rules:
- * 1. Tell the LLM it can ONLY use provided context
- * 2. Tell it to say "I don't know" if context doesn't cover the question
- * 3. Ask for source citations so users know where answers came from
- * 4. Keep context chunks clearly separated and labelled
  */
 function buildPrompt(question, chunks) {
   const contextBlock = chunks
@@ -109,16 +85,6 @@ export async function processChat({ conversationId, message, organizationId }) {
   }
 
   if (!conversation) {
-    // Auto-create org if needed (same pattern as ingestion)
-    await prisma.organization.upsert({
-  where: { clerkOrgId: organizationId },
-  update: {},
-  create: {
-    id: organizationId,
-    clerkOrgId: organizationId,
-    name: organizationId,
-  },
-});
     conversation = await prisma.conversation.create({
       data: { id: uuidv4(), organizationId },
     });
@@ -143,7 +109,6 @@ export async function processChat({ conversationId, message, organizationId }) {
   const matches = await searchSimilarChunks(queryVector, organizationId);
   console.log(`[Chat] Found ${matches.length} matches`);
 
-  // Log similarity scores — useful for tuning topK and understanding quality
   matches.forEach((m, i) => {
     console.log(`[Chat] Match ${i + 1}: score=${m.score?.toFixed(4)}, file=${m.metadata?.fileName}`);
   });
@@ -157,24 +122,46 @@ export async function processChat({ conversationId, message, organizationId }) {
   let answer;
 
   if (chunks.length === 0) {
-    // No relevant chunks found — don't hallucinate
     answer = "I don't have enough information in my knowledge base to answer that question. Please make sure relevant documents have been uploaded.";
   } else {
     const prompt = buildPrompt(message, chunks);
-    console.log('[Chat] Sending to Gemini Flash...');
-
     const chatModel = getChatModel();
-    try {
-  const result = await chatModel.generateContent(prompt);
-  answer = result.response.text();
-} catch (genError) {
-  if (genError.status === 429) {
-    answer = "I'm temporarily rate limited. Please wait 60 seconds and try again.";
-    console.warn('[Chat] Rate limited by Gemini — returning fallback message');
-  } else {
-    throw genError; // re-throw other errors
-  }
-}
+    
+    // --- SMART RETRY LOGIC ---
+    let maxRetries = 3;
+    let delayMs = 2000; // Start with a 2-second delay
+
+    for (let attempt = 1; attempt <= maxRetries; attempt++) {
+      try {
+        console.log(`[Chat] Sending to Gemini Flash... (Attempt ${attempt}/${maxRetries})`);
+        const result = await chatModel.generateContent(prompt);
+        answer = result.response.text();
+        break; // Success! Exit the retry loop
+      } catch (genError) {
+        // Safely check if it's a 503 error
+        const is503 = genError.status === 503 || (genError.message && genError.message.includes('503'));
+        
+        if (is503 && attempt < maxRetries) {
+          console.warn(`[Chat] 503 Server Busy. Retrying in ${delayMs / 1000}s...`);
+          await new Promise(resolve => setTimeout(resolve, delayMs));
+          delayMs += 1000; // Increase delay by 1s for the next attempt
+        } else if (genError.status === 429) {
+          answer = "I'm temporarily rate limited by the AI provider. Please wait 60 seconds and try again.";
+          console.warn('[Chat] Rate limited by Gemini — returning fallback message');
+          break; // Don't retry on rate limits
+        } else {
+          // If we run out of retries on a 503, fail gracefully
+          if (is503) {
+            answer = "The AI servers are currently experiencing extremely high demand. Please try asking again in a few moments.";
+            console.error('[Chat] Gemini 503 error persisted after all retries.');
+            break;
+          }
+          throw genError; // Throw any other critical errors
+        }
+      }
+    }
+    // --- END SMART RETRY LOGIC ---
+    
     console.log('[Chat] Answer generated');
   }
 
@@ -192,7 +179,7 @@ export async function processChat({ conversationId, message, organizationId }) {
     fileName: chunk.document.fileName,
     documentId: chunk.document.id,
     chunkIndex: chunk.chunkIndex,
-    preview: chunk.content.slice(0, 150) + '...', // first 150 chars as preview
+    preview: chunk.content.slice(0, 150) + '...', 
   }));
 
   return {
@@ -204,7 +191,6 @@ export async function processChat({ conversationId, message, organizationId }) {
 
 /**
  * Fetches full conversation history for a given conversationId.
- * Used by the frontend to render the chat thread.
  */
 export async function getConversationHistory(conversationId) {
   return prisma.message.findMany({

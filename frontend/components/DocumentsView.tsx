@@ -1,8 +1,8 @@
 'use client';
 
 import { useEffect, useState, useRef } from 'react';
-import { getDocuments, uploadDocument, setAuthToken, Document } from '@/lib/api';
-import { Search, Plus, FileText, Loader2, Upload, File, MoreHorizontal, Copy, Check } from 'lucide-react';
+import { getDocuments, uploadDocument, deleteDocument, Document } from '@/lib/api';
+import { Search, Plus, FileText, Loader2, Upload, File, MoreHorizontal, Copy, Check, Trash2 } from 'lucide-react';
 
 export default function DocumentsView({ organizationId }: { organizationId: string }) {
   const [documents, setDocuments] = useState<Document[]>([]);
@@ -16,6 +16,7 @@ export default function DocumentsView({ organizationId }: { organizationId: stri
 
   const [openMenuId, setOpenMenuId] = useState<string | null>(null);
   const [copiedId, setCopiedId] = useState<string | null>(null);
+  const [deletingId, setDeletingId] = useState<string | null>(null);
   
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -26,7 +27,6 @@ export default function DocumentsView({ organizationId }: { organizationId: stri
   
   async function loadDocuments() {
     try {
-      setAuthToken('demo-token');
       setDocuments(await getDocuments(organizationId));
       setError('');
     } catch (err: unknown) {
@@ -42,7 +42,6 @@ export default function DocumentsView({ organizationId }: { organizationId: stri
     setError('');
     
     try {
-      setAuthToken('demo-token');
       await uploadDocument(selectedFile, organizationId);
       await loadDocuments();
       closeModal();
@@ -50,6 +49,24 @@ export default function DocumentsView({ organizationId }: { organizationId: stri
       setError(err instanceof Error ? err.message : 'Upload failed');
     } finally {
       setUploading(false);
+    }
+  }
+
+  // --- NEW DELETE LOGIC ---
+  async function handleDelete(id: string) {
+    if (!confirm('Are you sure you want to delete this document? This will remove it from the AI knowledge base entirely.')) return;
+    
+    setDeletingId(id);
+    try {
+      await deleteDocument(id);
+      // Remove it from the UI immediately without needing a full reload
+      setDocuments(docs => docs.filter(doc => doc.id !== id));
+      setOpenMenuId(null);
+    } catch (err: unknown) {
+      console.error('[Delete Error]:', err);
+      alert('Failed to delete document');
+    } finally {
+      setDeletingId(null);
     }
   }
 
@@ -219,6 +236,17 @@ export default function DocumentsView({ organizationId }: { organizationId: stri
                         <span className="flex items-center gap-2.5"><Copy size={14}/> Copy filename</span>
                         {copiedId === doc.id && <Check size={14} className="text-[#22C55E]" />}
                       </button>
+                      <div className="h-[1px] w-full bg-white/[0.04] my-1"></div>
+                      <button 
+                        onClick={() => handleDelete(doc.id)}
+                        disabled={deletingId === doc.id}
+                        className="w-full text-left px-3 py-2 text-[13px] text-[#EF4444] hover:text-[#F87171] hover:bg-[#EF4444]/10 transition-colors flex items-center justify-between disabled:opacity-50"
+                      >
+                        <span className="flex items-center gap-2.5">
+                          {deletingId === doc.id ? <Loader2 size={14} className="animate-spin" /> : <Trash2 size={14}/>} 
+                          Delete
+                        </span>
+                      </button>
                     </div>
                   )}
                 </div>
@@ -252,6 +280,12 @@ export default function DocumentsView({ organizationId }: { organizationId: stri
                         <button onClick={() => handleCopy(doc.fileName, doc.id)} className="w-full text-left px-3 py-2 text-[13px] text-[#A1A1AA] hover:text-[#FAFAFA] hover:bg-[#18181B] transition-colors flex items-center justify-between">
                           <span className="flex items-center gap-2.5"><Copy size={14}/> Copy name</span>
                           {copiedId === doc.id && <Check size={14} className="text-[#22C55E]" />}
+                        </button>
+                        <div className="h-[1px] w-full bg-white/[0.04] my-1"></div>
+                        <button onClick={() => handleDelete(doc.id)} disabled={deletingId === doc.id} className="w-full text-left px-3 py-2 text-[13px] text-[#EF4444] hover:text-[#F87171] hover:bg-[#EF4444]/10 transition-colors flex items-center justify-between disabled:opacity-50">
+                          <span className="flex items-center gap-2.5">
+                            {deletingId === doc.id ? <Loader2 size={14} className="animate-spin" /> : <Trash2 size={14}/>} Delete
+                          </span>
                         </button>
                       </div>
                     )}

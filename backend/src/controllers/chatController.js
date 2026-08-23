@@ -1,4 +1,5 @@
 import { processChat, getConversationHistory } from '../services/chatService.js';
+import prisma from '../config/db.js';
 
 export async function sendMessage(req, res) {
   try {
@@ -41,6 +42,45 @@ export async function getHistory(req, res) {
     const messages = await getConversationHistory(conversationId);
     res.json({ messages });
   } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+}
+export async function getUserConversations(req, res) {
+  try {
+    const organizationId = req.organizationId;
+    
+    // Fetch all conversations for this user's organization
+    const conversations = await prisma.conversation.findMany({
+      where: { organizationId },
+      orderBy: { createdAt: 'desc' },
+      include: {
+        // Grab the very first thing the user asked to use as a title
+        messages: {
+          where: { role: 'user' },
+          orderBy: { createdAt: 'asc' },
+          take: 1,
+        },
+      },
+    });
+    
+    res.json({ conversations });
+  } catch (error) {
+    console.error('[Get Conversations Error]:', error);
+    res.status(500).json({ error: error.message });
+  }
+}
+export async function getConversationMessages(req, res) {
+  try {
+    const { id } = req.params;
+    
+    const messages = await prisma.message.findMany({
+      where: { conversationId: id },
+      orderBy: { createdAt: 'asc' },
+    });
+    
+    res.json({ messages });
+  } catch (error) {
+    console.error('[Get Messages Error]:', error);
     res.status(500).json({ error: error.message });
   }
 }

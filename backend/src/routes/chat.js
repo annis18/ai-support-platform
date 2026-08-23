@@ -1,12 +1,12 @@
 import express from 'express';
-import { sendMessage, getHistory } from '../controllers/chatController.js';
+import { sendMessage, getHistory, getUserConversations, getConversationMessages} from '../controllers/chatController.js';
+import { requireAuth } from '../middleware/auth.js';
 
 const router = express.Router();
 
-// POST /api/chat/message  → send a message, get an AI answer
-router.post('/message', sendMessage);
-
-// GET  /api/chat/:conversationId/history  → fetch conversation history
-router.get('/:conversationId/history', getHistory);
-
+// Add requireAuth before your controller functions
+router.post('/message', requireAuth, sendMessage);
+router.get('/:id/history', requireAuth, getHistory);
+router.get('/conversations', requireAuth, getUserConversations);
+router.get('/conversations/:id', requireAuth, getConversationMessages);
 export default router;

@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 
-import { getDocuments, setAuthToken, Document } from '@/lib/api';
+import { getDocuments, Document } from '@/lib/api';
 import { Search, FileText, Loader2, ChevronRight, Sparkles } from 'lucide-react';
 import Link from 'next/link';
 
@@ -13,7 +13,6 @@ export default function SearchView({ organizationId }: { organizationId: string 
 
   const loadDocuments = async () => {
     try {
-      setAuthToken('demo-token');
       const docs = await getDocuments(organizationId);
       setDocuments(docs);
     } catch (err) {
@@ -105,7 +104,7 @@ export default function SearchView({ organizationId }: { organizationId: string 
               <p className="text-[15px] font-medium text-[#FAFAFA] mb-2">No documents found</p>
               <p className="text-[14px] text-[#A1A1AA] mb-6">We couldn&apos;t find anything matching &quot;{searchQuery}&quot;.</p>
               <Link href="/?view=chat" className="flex items-center gap-2 px-4 py-2 bg-white/[0.08] hover:bg-white/[0.12] text-[#FAFAFA] text-[13px] font-medium rounded-lg transition-colors">
-                <Sparkles size={14} /> Ask AI instead
+                <Sparkles size={14} /> Get Answers instead
               </Link>
             </div>
           )}

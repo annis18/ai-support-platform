@@ -55,16 +55,6 @@ async function embedChunks(chunks) {
 
 export async function ingestDocument({ filePath, fileName, fileType, organizationId }) {
 
-  // Auto-create the org if it doesn't exist (prevents foreign key error)
-  await prisma.organization.upsert({
-  where: { clerkOrgId: organizationId },
-  update: {},
-  create: {
-    id: organizationId,
-    clerkOrgId: organizationId,
-    name: organizationId,
-  },
-});
 
   const document = await prisma.document.create({
     data: {

@@ -1,20 +1,18 @@
-import { clerkMiddleware, getAuth } from '@clerk/express';
+import jwt from 'jsonwebtoken';
 
-export const clerkAuth = clerkMiddleware();
-
-export function requireAuth(req, res, next) {
-  const auth = getAuth(req);
-
-  // If authenticated, attach real IDs
-  if (auth?.userId) {
-    req.userId = auth.userId;
-    req.orgId = auth.orgId || auth.userId;
-  } else {
-    // Fall back to query/body orgId for development
-    // In production remove this fallback
-    req.userId = 'dev-user';
-    req.orgId = req.query.organizationId || req.body?.organizationId || 'default-org';
+export const requireAuth = (req, res, next) => {
+  const authHeader = req.headers.authorization;
+  if (!authHeader || !authHeader.startsWith('Bearer ')) {
+    return res.status(401).json({ error: 'Missing or invalid Authorization header' });
   }
 
-  next();
-}
+  const token = authHeader.split(' ')[1];
+  try {
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    req.userId = decoded.userId;
+    req.organizationId = decoded.organizationId;
+    next();
+  } catch (error) {
+    return res.status(401).json({ error: 'Invalid or expired token' });
+  }
+};

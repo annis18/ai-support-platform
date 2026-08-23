@@ -7,7 +7,7 @@ export async function uploadDocument(req, res) {
       return res.status(400).json({ error: 'No file uploaded' });
     }
 
-    const organizationId = req.body.organizationId || 'default-org';
+    const organizationId = req.organizationId;
 
     const result = await ingestDocument({
       filePath: req.file.path,
@@ -48,6 +48,32 @@ export async function getDocuments(req, res) {
 
   } catch (error) {
     console.error('getDocuments error:', error.message);
+    res.status(500).json({ error: error.message });
+  }
+}
+
+export async function deleteDocument(req, res) {
+  try {
+    const { id } = req.params;
+
+    // Find strictly by the unique UUID to bypass any org-matching quirks
+    const doc = await prisma.document.findUnique({
+      where: { id }
+    });
+    
+    if (!doc) {
+      return res.status(404).json({ error: 'Document not found' });
+    }
+
+    // Delete all related chunks first (to satisfy Postgres foreign key rules)
+    await prisma.documentChunk.deleteMany({ where: { documentId: id } });
+    
+    // Delete the document itself
+    await prisma.document.delete({ where: { id } });
+
+    res.json({ message: 'Document deleted successfully' });
+  } catch (error) {
+    console.error('Delete error:', error.message);
     res.status(500).json({ error: error.message });
   }
 }
