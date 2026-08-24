@@ -16,7 +16,7 @@ export function getEmbeddingModel() {
 }
 
 export function getChatModel() {
-  return genAI.getGenerativeModel({ model: 'gemini-flash-latest' });
+  return genAI.getGenerativeModel({ model: gemini-2.5-flash });
 }
 
 export default genAI;
