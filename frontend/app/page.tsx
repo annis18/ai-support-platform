@@ -62,11 +62,14 @@ function DashboardContent() {
   };
 
   const handleLogout = () => {
-    localStorage.removeItem('token');
-    localStorage.removeItem('user');
-    setIsAuthenticated(false);
-    setUser(null);
-  };
+  // 1. Remove all stored tokens and cached user data
+  localStorage.removeItem('token');
+  localStorage.removeItem('user');
+  sessionStorage.clear();
+
+  // 2. Hard redirect to reset Next.js client-side memory
+  window.location.href = '/login';
+};
 
   if (loading) {
     return <div className="h-screen flex items-center justify-center bg-[#09090B] text-white">Loading...</div>;
