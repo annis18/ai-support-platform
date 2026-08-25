@@ -1,6 +1,6 @@
 import { GoogleGenerativeAI } from '@google/generative-ai';
 
-const apiKey = "AQ.Ab8RN6JhTpnXmfiAMwz-2JAFr1Y8GYxMZFyLxQE5Xtpuju1Sfw";
+const apiKey = process.env.GOOGLE_API_KEY;
 
 if (!apiKey) {
   throw new Error('GOOGLE_API_KEY is missing from .env');
