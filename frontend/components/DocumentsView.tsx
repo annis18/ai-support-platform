@@ -25,7 +25,7 @@ export default function DocumentsView({ organizationId }: { organizationId: stri
     
     setLoading(true);
     try {
-      const response = await getDocuments(organizationId);
+      const response = await getDocuments(organizationId) as any;
       // Handles both direct array responses and wrapped { documents: [...] } objects
       const docsList = Array.isArray(response) 
         ? response 
